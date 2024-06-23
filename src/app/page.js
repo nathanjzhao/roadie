@@ -2,7 +2,6 @@
 "use client";
 import ClientComponent from "@/components/ClientComponent";
 import { fetchAccessToken } from "@humeai/voice";
-import { FaceWidgets } from "@/components/widgets/FaceWidgets";
 
 export default async function Home() {
   const accessToken = await fetchAccessToken({
@@ -16,7 +15,6 @@ export default async function Home() {
 
   return (
     <>
-      <FaceWidgets />
       <ClientComponent accessToken={accessToken} />
     </>
   );

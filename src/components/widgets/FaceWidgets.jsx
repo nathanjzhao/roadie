@@ -12,23 +12,28 @@ import { VideoRecorder } from "../../lib/media/videoRecorder";
 import { blobToBase64 } from "../../lib/utilities/blobUtilities";
 import { getApiUrlWs } from "../../lib/utilities/environmentUtilities";
 
-type FaceWidgetsProps = {
-  onCalibrate: Optional<(emotions: Emotion[]) => void>;
-};
+const trackingFacesPlaceholder = [{
+  boundingBox: {
+    x: -20,
+    y: -20, 
+    h: 0,
+    w: 0,
+  }
+}]
 
-export function FaceWidgets({ onCalibrate }: FaceWidgetsProps) {
-  const socketRef = useRef<WebSocket | null>(null);
-  const recorderRef = useRef<VideoRecorder | null>(null);
-  const photoRef = useRef<HTMLCanvasElement | null>(null);
+export function FaceWidgets({ onCalibrate, connectVoice, sendSessionSettings, sendUserInput, sendAssistantInput}) {
+  const socketRef = useRef(null);
+  const recorderRef = useRef(null);
+  const photoRef = useRef(null);
   const mountRef = useRef(true);
   const recorderCreated = useRef(false);
   const numReconnects = useRef(0);
-  const [trackedFaces, setTrackedFaces] = useState<TrackedFace[]>([]);
-  const [emotions, setEmotions] = useState<Emotion[]>([]);
+  const [trackedFaces, setTrackedFaces] = useState([]);
+  const [emotions, setEmotions] = useState([]);
   const [status, setStatus] = useState("");
   const numLoaderLevels = 5;
   const maxReconnects = 3;
-  const loaderNames: EmotionName[] = [
+  const loaderNames = [
     "Calmness",
     "Joy",
     "Amusement",
@@ -90,11 +95,11 @@ export function FaceWidgets({ onCalibrate }: FaceWidgetsProps) {
     }
   }
 
-  async function socketOnMessage(event: MessageEvent) {
+  async function socketOnMessage(event) {
     setStatus("");
     const response = JSON.parse(event.data);
     // console.log("Got response", response);
-    const predictions: FacePrediction[] = response.face?.predictions || [];
+    const predictions = response.face?.predictions || [];
     const warning = response.face?.warning || "";
     const error = response.error;
     if (error) {
@@ -109,8 +114,8 @@ export function FaceWidgets({ onCalibrate }: FaceWidgetsProps) {
       setEmotions([]);
     }
 
-    const newTrackedFaces: TrackedFace[] = [];
-    predictions.forEach(async (pred: FacePrediction, dataIndex: number) => {
+    const newTrackedFaces = [];
+    predictions.forEach(async (pred, dataIndex) => {
       newTrackedFaces.push({ boundingBox: pred.bbox });
       if (dataIndex === 0) {
         const newEmotions = pred.emotions;
@@ -125,7 +130,7 @@ export function FaceWidgets({ onCalibrate }: FaceWidgetsProps) {
     await capturePhoto();
   }
 
-  async function socketOnClose(event: CloseEvent) {
+  async function socketOnClose(event) {
     console.log("Socket closed");
 
     if (mountRef.current === true) {
@@ -137,7 +142,7 @@ export function FaceWidgets({ onCalibrate }: FaceWidgetsProps) {
     }
   }
 
-  async function socketOnError(event: Event) {
+  async function socketOnError(event) {
     console.error("Socket failed to connect: ", event);
     if (numReconnects.current >= maxReconnects) {
       setStatus(`Failed to connect to the Hume API.
@@ -170,7 +175,7 @@ export function FaceWidgets({ onCalibrate }: FaceWidgetsProps) {
     }
   }
 
-  async function onVideoReady(videoElement: HTMLVideoElement) {
+  async function onVideoReady(videoElement) {
     console.log("Video element is ready");
 
     if (!photoRef.current) {
@@ -206,7 +211,7 @@ export function FaceWidgets({ onCalibrate }: FaceWidgetsProps) {
     sendRequest(photoBlob);
   }
 
-  async function sendRequest(photoBlob: Blob) {
+  async function sendRequest(photoBlob) {
     const socket = socketRef.current;
 
     if (!socket) {
@@ -243,9 +248,108 @@ export function FaceWidgets({ onCalibrate }: FaceWidgetsProps) {
     }
   }
 
-  // useEffect(() => {
-  //   console.log(emotions)
-  // }, [emotions]);
+  const tirednessTimerRef = useRef(null);
+  const contemplationTimerRef = useRef(null);
+  const surpriseTimerRef = useRef(null);
+  const boredomTimerRef = useRef(null);
+
+  useEffect(() => {
+    const checkAndConnectVoice = () => {
+      // Assuming 'emotions' is an array of objects like [{ emotion: 'calmness', value: 0.9 }, ...]
+      // Sort emotions by value in descending order
+      const sortedEmotions = [...emotions].sort((a, b) => b.value - a.value);
+      const top2Emotions = sortedEmotions.slice(0, 2).map(e => e.name);
+  
+      if (top2Emotions.includes('Tiredness')) {
+        // Start or reset a 30-second timer
+        if (tirednessTimerRef.current) clearTimeout(tirednessTimerRef.current);
+        tirednessTimerRef.current = setTimeout(() => {
+          connectVoice();
+
+          // Wait for an additional 2 seconds before calling sendAssistantInput
+          setTimeout(() => {
+            sendAssistantInput("You seem tired. What can I do to keep you up?");
+          }, 2000); // 2 seconds
+        }, 30000); // 30 seconds
+      } else {
+        // If conditions are not met, clear the timer
+        if (tirednessTimerRef.current) {
+          clearTimeout(tirednessTimerRef.current);
+          tirednessTimerRef.current = null;
+        }
+      }
+
+      if (top2Emotions.includes('Contemplation')) {
+        // Start or reset a 30-second timer
+        if (contemplationTimerRef.current) clearTimeout(contemplationTimerRef.current);
+        contemplationTimerRef.current = setTimeout(() => {
+          connectVoice();
+          
+          // Wait for an additional 2 seconds before calling sendAssistantInput
+          setTimeout(() => {
+            sendAssistantInput("What are you thinking about? I'd like to hear.");
+          }, 2000); // 2 seconds
+        }, 20000); // 20 seconds
+      } else {
+        // If conditions are not met, clear the timer
+        if (contemplationTimerRef.current) {
+          clearTimeout(contemplationTimerRef.current);
+          contemplationTimerRef.current = null;
+        }
+      }
+
+      if (top2Emotions.includes('Surprise (positive)')) {
+        // Start or reset a 30-second timer
+        if (surpriseTimerRef.current) clearTimeout(surpriseTimerRef.current);
+        surpriseTimerRef.current = setTimeout(() => {
+          connectVoice();
+          
+          // Wait for an additional 2 seconds before calling sendAssistantInput
+          setTimeout(() => {
+            sendAssistantInput("Woah! What happened? Why are you surprised?");
+          }, 2000); // 2 seconds
+        }, 10000); // 10 seconds
+      } else {
+        // If conditions are not met, clear the timer
+        if (surpriseTimerRef.current) {
+          clearTimeout(surpriseTimerRef.current);
+          surpriseTimerRef.current = null;
+        }
+      }
+
+      if (top2Emotions.includes('Boredom')) {
+        // Start or reset a 30-second timer
+        if (boredomTimerRef.current) clearTimeout(boredomTimerRef.current);
+        boredomTimerRef.current = setTimeout(() => {
+          connectVoice();
+          
+          // Wait for an additional 2 seconds before calling sendAssistantInput
+          setTimeout(() => {
+            sendAssistantInput("You seem bored. Want to hear a joke?");
+          }, 2000); // 2 seconds
+        }, 60000); // 60 seconds
+      } else {
+        // If conditions are not met, clear the timer
+        if (boredomTimerRef.current) {
+          clearTimeout(boredomTimerRef.current);
+          boredomTimerRef.current = null;
+        }
+      }
+    };
+
+    if (isVideoRunning) {
+      checkAndConnectVoice();
+    }
+   
+  
+    // Cleanup on component unmount
+    return () => {
+      if (tirednessTimerRef.current) clearTimeout(tirednessTimerRef.current);
+      if (contemplationTimerRef.current) clearTimeout(contemplationTimerRef.current);
+      if (surpriseTimerRef.current) clearTimeout(surpriseTimerRef.current);
+      if (boredomTimerRef.current) clearTimeout(boredomTimerRef.current);
+    };
+  }, [emotions]); 
 
   return (
     <div>
@@ -253,7 +357,7 @@ export function FaceWidgets({ onCalibrate }: FaceWidgetsProps) {
         <FaceTrackedVideo
           className="mb-6"
           onVideoReady={onVideoReady}
-          trackedFaces={trackedFaces}
+          trackedFaces={isVideoRunning ? trackedFaces : trackingFacesPlaceholder}
           width={500}
           height={375}
         />
