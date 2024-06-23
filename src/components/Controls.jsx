@@ -121,7 +121,7 @@ export default function Controls() {
         >
           End Session
         </button>
-        <button className={`ml-4 font-semibold text-center p-2 rounded border border-gray-400 shadow-lg ${!isMuted ? 'shadow-lg bg-blue-400' : 'bg-blue-500'}`}
+        <button className={`ml-4 font-semibold text-center p-2 rounded border border-gray-400 shadow-lg ${!isMuted ? 'bg-blue-400' : 'bg-blue-500'}`}
           onClick={toggleMute}
         >
           {isMuted ? 'Unmute' : 'Mute'}

@@ -31,7 +31,10 @@ export default function ClientComponent({ accessToken }) {
       resumedGroupChatId={resumedGroupChatId}
     >
       {/* {resumedGroupChatId} */}
-      <Messages />
+      
+      <div className="pb-4"> {/* Use the class for styling */}
+        <Messages />
+      </div>
       <Controls />
     </VoiceProvider>
   );
