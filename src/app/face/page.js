@@ -1,3 +1,5 @@
+"use client"
+
 import { FaceWidgets } from "@/components/widgets/FaceWidgets";
 
 export default function FacePage() {

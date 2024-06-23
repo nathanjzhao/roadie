@@ -2,7 +2,6 @@ import { Emotion, EmotionName } from "../../lib/data/emotion";
 import { None, Optional } from "../../lib/utilities/typeUtilities";
 import { useContext, useEffect, useRef, useState } from "react";
 
-import { AuthContext } from "../menu/Auth";
 import { Descriptor } from "./Descriptor";
 import { FacePrediction } from "../../lib/data/facePrediction";
 import { FaceTrackedVideo } from "./FaceTrackedVideo";
@@ -18,7 +17,6 @@ type FaceWidgetsProps = {
 };
 
 export function FaceWidgets({ onCalibrate }: FaceWidgetsProps) {
-  const authContext = useContext(AuthContext);
   const socketRef = useRef<WebSocket | null>(null);
   const recorderRef = useRef<VideoRecorder | null>(null);
   const photoRef = useRef<HTMLCanvasElement | null>(null);
@@ -41,16 +39,20 @@ export function FaceWidgets({ onCalibrate }: FaceWidgetsProps) {
     "Horror",
     "Surprise (negative)",
   ];
+  
+  const [isVideoRunning, setIsVideoRunning] = useState(true);
 
   useEffect(() => {
     console.log("Mounting component");
     mountRef.current = true;
     console.log("Connecting to server");
     connect();
-
+    setIsVideoRunning(true);
+  
     return () => {
       console.log("Tearing down component");
       stopEverything();
+      setIsVideoRunning(false);
     };
   }, []);
 
@@ -59,9 +61,9 @@ export function FaceWidgets({ onCalibrate }: FaceWidgetsProps) {
     if (socket && socket.readyState === WebSocket.OPEN) {
       console.log("Socket already exists, will not create");
     } else {
-      const baseUrl = getApiUrlWs(authContext.environment);
+      const baseUrl = "https://api.hume.ai";
       const endpointUrl = `${baseUrl}/v0/stream/models`;
-      const socketUrl = `${endpointUrl}?apikey=${authContext.key}`;
+      const socketUrl = `${endpointUrl}?apikey=${process.env.NEXT_PUBLIC_HUME_API_KEY}`;
       console.log(`Connecting to websocket... (using ${endpointUrl})`);
       setStatus(`Connecting to server...`);
 
@@ -84,13 +86,14 @@ export function FaceWidgets({ onCalibrate }: FaceWidgetsProps) {
       await capturePhoto();
     } else {
       console.warn("No video recorder exists yet to use with the open socket");
+      await capturePhoto();
     }
   }
 
   async function socketOnMessage(event: MessageEvent) {
     setStatus("");
     const response = JSON.parse(event.data);
-    console.log("Got response", response);
+    // console.log("Got response", response);
     const predictions: FacePrediction[] = response.face?.predictions || [];
     const warning = response.face?.warning || "";
     const error = response.error;
@@ -137,7 +140,7 @@ export function FaceWidgets({ onCalibrate }: FaceWidgetsProps) {
   async function socketOnError(event: Event) {
     console.error("Socket failed to connect: ", event);
     if (numReconnects.current >= maxReconnects) {
-      setStatus(`Failed to connect to the Hume API (${authContext.environment}).
+      setStatus(`Failed to connect to the Hume API.
       Please log out and verify that your API key is correct.`);
       stopEverything();
     } else {
@@ -148,7 +151,7 @@ export function FaceWidgets({ onCalibrate }: FaceWidgetsProps) {
 
   function stopEverything() {
     console.log("Stopping everything...");
-    mountRef.current = false;
+    // mountRef.current = false;
     const socket = socketRef.current;
     if (socket) {
       console.log("Closing socket");
@@ -226,6 +229,23 @@ export function FaceWidgets({ onCalibrate }: FaceWidgetsProps) {
       socket.close();
     }
   }
+  async function toggleVideo() {
+    if (isVideoRunning) {
+      // Stop the video
+      // stopEverything();
+      setIsVideoRunning(false);
+      socketRef.current = null;
+    } else {
+      // Start the video
+      console.log("Mounting component");
+      connect();
+      setIsVideoRunning(true);
+    }
+  }
+
+  // useEffect(() => {
+  //   console.log(emotions)
+  // }, [emotions]);
 
   return (
     <div>
@@ -253,6 +273,11 @@ export function FaceWidgets({ onCalibrate }: FaceWidgetsProps) {
 
       <div className="pt-6">{status}</div>
       <canvas className="hidden" ref={photoRef}></canvas>
+
+
+      <button onClick={toggleVideo} className="toggle-video-btn">
+        {isVideoRunning ? 'Stop Video' : 'Start Video'}
+      </button>
     </div>
   );
 }
