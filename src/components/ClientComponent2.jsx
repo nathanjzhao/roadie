@@ -1,6 +1,6 @@
 "use client";
 import { VoiceProvider } from "@humeai/voice-react";
-import Messages from "./Controls";
+import Messages from "./Controls2";
 import Controls from "./Messages";
 
 export default function ClientComponent({

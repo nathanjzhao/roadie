@@ -97,23 +97,30 @@ export default function Controls() {
   }
 
   return (
-    <div className="ml-96">
-      <FaceWidgets connectVoice={connect} sendSessionSettings={sendSessionSettings} sendUserInput={sendUserInput} sendAssistantInput={sendAssistantInput}/>
-      <button className="font-semibold text-center p-2 bg-gray-200 rounded border border-gray-400 shadow-lg"
-        onClick={() => {
-          connect()
-            .then(() => {
-              console.log("Connected")
-              /* handle success */
-            })
-            .catch(() => {
-              console.log("Error")
-              /* handle error */
-            });
-        }}
-      >
-        Start Session
-      </button>
+    <div className="h-screen flex items-center justify-center">
+      <div className="w-1/5 h-1/5 flex flex-col items-center justify-center bg-gray-100 p-4 rounded shadow-lg">
+        <FaceWidgets 
+          connectVoice={connect} 
+          sendSessionSettings={sendSessionSettings} 
+          sendUserInput={sendUserInput} 
+          sendAssistantInput={sendAssistantInput}
+        />
+        <button 
+          className="font-semibold text-center p-2 rounded border border-gray-400 bg-white shadow-lg mt-4"
+          onClick={() => {
+            connect()
+              .then(() => {
+                console.log("Connected");
+              })
+              .catch(() => {
+                console.log("Error");
+              });
+          }}
+        >
+          Start Session
+        </button>
+      </div>
     </div>
   );
+  
 }
