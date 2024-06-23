@@ -85,7 +85,7 @@ export default function Controls() {
 
   if (readyState === VoiceReadyState.OPEN) {
     return (
-      <button
+      <button className="font-semibold text-center p-6 bg-gray-200 rounded border border-gray-400 shadow-lg"
         onClick={() => {
           disconnect();
           start();
@@ -97,9 +97,9 @@ export default function Controls() {
   }
 
   return (
-    <>
+    <div className="ml-96">
       <FaceWidgets connectVoice={connect} sendSessionSettings={sendSessionSettings} sendUserInput={sendUserInput} sendAssistantInput={sendAssistantInput}/>
-      <button
+      <button className="font-semibold text-center p-2 bg-gray-200 rounded border border-gray-400 shadow-lg"
         onClick={() => {
           connect()
             .then(() => {
@@ -114,6 +114,6 @@ export default function Controls() {
       >
         Start Session
       </button>
-    </>
+    </div>
   );
 }
