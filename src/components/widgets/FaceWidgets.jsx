@@ -34,15 +34,14 @@ export function FaceWidgets({ onCalibrate, connectVoice, sendSessionSettings, se
   const numLoaderLevels = 5;
   const maxReconnects = 3;
   const loaderNames = [
-    "Calmness",
+    "Tiredness",
+    "Contemplation",
+    "Boredom",
+    "Surprise (positive)",
+    "Disgust",
     "Joy",
-    "Amusement",
     "Anger",
     "Confusion",
-    "Disgust",
-    "Sadness",
-    "Horror",
-    "Surprise (negative)",
   ];
   
   const [isVideoRunning, setIsVideoRunning] = useState(true);
@@ -259,8 +258,9 @@ export function FaceWidgets({ onCalibrate, connectVoice, sendSessionSettings, se
       // Sort emotions by value in descending order
       const sortedEmotions = [...emotions].sort((a, b) => b.value - a.value);
       const top2Emotions = sortedEmotions.slice(0, 2).map(e => e.name);
+      const top4Emotions = sortedEmotions.slice(0, 4).map(e => e.name);
   
-      if (top2Emotions.includes('Tiredness')) {
+      if (top4Emotions.includes('Tiredness')) {
         // Start or reset a 30-second timer
         if (tirednessTimerRef.current) clearTimeout(tirednessTimerRef.current);
         tirednessTimerRef.current = setTimeout(() => {
@@ -270,7 +270,7 @@ export function FaceWidgets({ onCalibrate, connectVoice, sendSessionSettings, se
           setTimeout(() => {
             sendAssistantInput("You seem tired. What can I do to keep you up?");
           }, 2000); // 2 seconds
-        }, 30000); // 30 seconds
+        }, 1000); // 1 seconds
       } else {
         // If conditions are not met, clear the timer
         if (tirednessTimerRef.current) {
@@ -289,7 +289,7 @@ export function FaceWidgets({ onCalibrate, connectVoice, sendSessionSettings, se
           setTimeout(() => {
             sendAssistantInput("What are you thinking about? I'd like to hear.");
           }, 2000); // 2 seconds
-        }, 20000); // 20 seconds
+        }, 7000); // 7 seconds
       } else {
         // If conditions are not met, clear the timer
         if (contemplationTimerRef.current) {
@@ -298,7 +298,7 @@ export function FaceWidgets({ onCalibrate, connectVoice, sendSessionSettings, se
         }
       }
 
-      if (top2Emotions.includes('Surprise (positive)')) {
+      if (top2Emotions.includes('Surprise (positive)') || top2Emotions.includes('Surprise (negative)')) {
         // Start or reset a 30-second timer
         if (surpriseTimerRef.current) clearTimeout(surpriseTimerRef.current);
         surpriseTimerRef.current = setTimeout(() => {
@@ -308,7 +308,7 @@ export function FaceWidgets({ onCalibrate, connectVoice, sendSessionSettings, se
           setTimeout(() => {
             sendAssistantInput("Woah! What happened? Why are you surprised?");
           }, 2000); // 2 seconds
-        }, 10000); // 10 seconds
+        }, 2000); // 2000 seconds
       } else {
         // If conditions are not met, clear the timer
         if (surpriseTimerRef.current) {
@@ -327,7 +327,7 @@ export function FaceWidgets({ onCalibrate, connectVoice, sendSessionSettings, se
           setTimeout(() => {
             sendAssistantInput("You seem bored. Want to hear a joke?");
           }, 2000); // 2 seconds
-        }, 60000); // 60 seconds
+        }, 10000); // 10 seconds
       } else {
         // If conditions are not met, clear the timer
         if (boredomTimerRef.current) {
