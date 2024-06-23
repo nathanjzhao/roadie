@@ -110,10 +110,10 @@ export default function Controls() {
 
 
   
-  if (readyState === VoiceReadyState.OPEN) {
-    return (
+  if (readyState === VoiceReadyState.OPEN) {return (
+    <div className="flex justify-center mt-4">
       <div>
-        <button className="font-semibold text-center p-6 bg-gray-200 rounded border border-gray-400 shadow-lg"
+        <button className="font-semibold text-center p-2 bg-orange-300 rounded shadow-lg"
           onClick={() => {
             disconnect();
             start();
@@ -121,34 +121,39 @@ export default function Controls() {
         >
           End Session
         </button>
-        <button className="font-semibold text-center p-6 ml-4 bg-gray-200 rounded border border-gray-400 shadow-lg" // Step 3: Mute/Unmute button
+        <button className={`ml-4 font-semibold text-center p-2 rounded border border-gray-400 shadow-lg ${!isMuted ? 'shadow-lg bg-blue-400' : 'bg-red-400'}`}
           onClick={toggleMute}
         >
           {isMuted ? 'Unmute' : 'Mute'}
         </button>
       </div>
-    );
+    </div>
+  );
   }
 
 
   return (
-    <div className="ml-96">
-      <FaceWidgets connectVoice={connect} sendSessionSettings={sendSessionSettings} sendUserInput={sendUserInput} sendAssistantInput={sendAssistantInput}/>
-      <button className="font-semibold text-center p-2 bg-gray-200 rounded border border-gray-400 shadow-lg"
-        onClick={() => {
-          connect()
-            .then(() => {
-              console.log("Connected")
-              /* handle success */
-            })
-            .catch(() => {
-              console.log("Error")
-              /* handle error */
-            });
-        }}
-      >
-        Start Session
-      </button>
+    <div className="h-screen flex items-center justify-center">
+      <div className="w-1/5 h-1/5 flex flex-col items-center justify-center bg-gray-100 p-4 rounded shadow-lg">
+        <FaceWidgets connectVoice={connect} sendSessionSettings={sendSessionSettings} sendUserInput={sendUserInput} sendAssistantInput={sendAssistantInput}/>
+        <hr className="my-4 w-full border-t border-gray-300" /> 
+        <button 
+          className="font-semibold text-center p-2 rounded border border-gray-400 bg-orange-300 shadow-lg mt-4"
+          onClick={() => {
+            connect()
+              .then(() => {
+                console.log("Connected")
+                /* handle success */
+              })
+              .catch(() => {
+                console.log("Error")
+                /* handle error */
+              });
+          }}
+        >
+          Start Session
+        </button>
+      </div>
     </div>
   );
 }

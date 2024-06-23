@@ -37,3 +37,7 @@ async def startup_event():
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
+
+@app.get("/api/process-frame")
+def process_frame():
+    return {"Hello": "World"}

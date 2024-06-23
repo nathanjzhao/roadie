@@ -260,9 +260,9 @@ export function FaceWidgets({ onCalibrate, connectVoice, sendSessionSettings, se
     setTop4Emotions(top4);
   }, [emotions]);
 
-  const isTirednessConsistentlyPresent = useConsistentPresence(top4Emotions, "Tiredness", 5000);
-  const isContemplationConsistentlyPresent = useConsistentPresence(top4Emotions, "Contemplation", 10000);
-  const isSurpriseConsistentlyPresent = useConsistentPresence(top4Emotions, "Surprise (positive)", 1000);
+  const isTirednessConsistentlyPresent = useConsistentPresence(top2Emotions, "Tiredness", 1000);
+  const isContemplationConsistentlyPresent = useConsistentPresence(top2Emotions, "Contemplation", 4000);
+  const isSurpriseConsistentlyPresent = useConsistentPresence(top2Emotions, "Surprise (positive)", 1000);
   const isBoredomConsistentlyPresent = useConsistentPresence(top2Emotions, "Boredom", 20000);
 
   useEffect(() => {
@@ -437,7 +437,10 @@ export function FaceWidgets({ onCalibrate, connectVoice, sendSessionSettings, se
       <canvas className="hidden" ref={photoRef}></canvas>
 
 
-      <button onClick={toggleVideo} className="toggle-video-btn font-semibold text-center p-2 bg-gray-200 rounded border border-gray-400 shadow-lg">
+      <button 
+        onClick={toggleVideo} 
+        className={`toggle-video-btn font-semibold text-center p-2 rounded border border-gray-400 ${!isVideoRunning ? 'shadow-lg bg-gray-200'  : ''}`}
+      >
         {isVideoRunning ? 'Stop Video' : 'Start Video'}
       </button>
     </div>
