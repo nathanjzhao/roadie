@@ -258,9 +258,9 @@ export function FaceWidgets({ onCalibrate, connectVoice, sendSessionSettings, se
       // Sort emotions by value in descending order
       const sortedEmotions = [...emotions].sort((a, b) => b.value - a.value);
       const top2Emotions = sortedEmotions.slice(0, 2).map(e => e.name);
-      const top4Emotions = sortedEmotions.slice(0, 4).map(e => e.name);
+      const top3Emotions = sortedEmotions.slice(0, 3).map(e => e.name);
   
-      if (top4Emotions.includes('Tiredness')) {
+      if (top3Emotions.includes('Tiredness')) {
         // Start or reset a 30-second timer
         if (tirednessTimerRef.current) clearTimeout(tirednessTimerRef.current);
         tirednessTimerRef.current = setTimeout(() => {
