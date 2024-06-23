@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { useVoice, VoiceReadyState } from "@humeai/voice-react";
 import { usePorcupine } from "@picovoice/porcupine-react";
 import { FaceWidgets } from "@/components/widgets/FaceWidgets";
+import Cookies from 'js-cookie';
 
 const PORCUPINE_KEYWORD_BASE64 = require("@/constants/keywordParams")
 const PORCUPINE_MODEL_BASE64 = require("@/constants/modelParams")
@@ -30,7 +31,7 @@ const porcupineModel2 = {
 }
 
 export default function Controls() {
-  const { connect, disconnect, sendSessionSettings, sendUserInput, sendAssistantInput, readyState } = useVoice();
+  const { connect, disconnect, sendSessionSettings, sendUserInput, sendAssistantInput, mute, unmute, isMuted, readyState, messages } = useVoice();
 
   const {
     keywordDetection,
@@ -43,6 +44,18 @@ export default function Controls() {
     release,
   } = usePorcupine();
   
+
+  useEffect(() => {
+    if (messages.length == 2) {
+      const messageWithIds = {
+        ...messages[1],
+      };
+      // Assuming you have a function to add to cookies
+      console.log(messageWithIds)
+      Cookies.set('messageWithIds', JSON.stringify(messageWithIds));
+    }
+  }, [messages]);
+
   // useEffect(() => {
   //   console.log('keywordDetection:', keywordDetection);
   //   console.log('isLoaded:', isLoaded);
@@ -58,7 +71,7 @@ export default function Controls() {
     if (!isLoaded) {
       await init(
         process.env.NEXT_PUBLIC_PORCUPINE_API_KEY,
-        [porcupineKeyword, porcupineKeyword2],
+        [porcupineKeyword, porcupineKeyword2], // Hey Roadie, Bye bye Roadie
         porcupineModel
       );
     }
@@ -70,31 +83,53 @@ export default function Controls() {
     startPpn();
   }, []);
 
-
   useEffect(() => {
-    if (keywordDetection !== null && keywordDetection.label === "Hey Roadie" && readyState !== VoiceReadyState.OPEN) {
-      connect();
-      stop();
-      release();
-    }
-    if (keywordDetection !== null && keywordDetection.label === "Bye bye Roadie" && readyState === VoiceReadyState.OPEN) {
-      disconnect();
-      start();
-    }
+    const handleVoiceCommands = async () => {
+      if (keywordDetection !== null && keywordDetection.label === "Hey Roadie" && readyState !== VoiceReadyState.OPEN) {
+        connect();
+        stop();
+        release();
+      }
+      if (keywordDetection !== null && keywordDetection.label === "Bye bye Roadie" && readyState === VoiceReadyState.OPEN) {
+        disconnect();
+        start();
+      }
+    };
+  
+    handleVoiceCommands();
   }, [keywordDetection]);
 
+
+  const toggleMute = () => {
+    if (isMuted) {
+      unmute();
+    } else {
+      mute();
+    }
+  };
+
+
+  
   if (readyState === VoiceReadyState.OPEN) {
     return (
-      <button className="font-semibold text-center p-6 bg-gray-200 rounded border border-gray-400 shadow-lg"
-        onClick={() => {
-          disconnect();
-          start();
-        }}
-      >
-        End Session
-      </button>
+      <div>
+        <button className="font-semibold text-center p-6 bg-gray-200 rounded border border-gray-400 shadow-lg"
+          onClick={() => {
+            disconnect();
+            start();
+          }}
+        >
+          End Session
+        </button>
+        <button className="font-semibold text-center p-6 ml-4 bg-gray-200 rounded border border-gray-400 shadow-lg" // Step 3: Mute/Unmute button
+          onClick={toggleMute}
+        >
+          {isMuted ? 'Unmute' : 'Mute'}
+        </button>
+      </div>
     );
   }
+
 
   return (
     <div className="ml-96">

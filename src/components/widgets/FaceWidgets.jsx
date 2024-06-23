@@ -263,7 +263,7 @@ export function FaceWidgets({ onCalibrate, connectVoice, sendSessionSettings, se
   const isTirednessConsistentlyPresent = useConsistentPresence(top4Emotions, "Tiredness", 5000);
   const isContemplationConsistentlyPresent = useConsistentPresence(top4Emotions, "Contemplation", 10000);
   const isSurpriseConsistentlyPresent = useConsistentPresence(top4Emotions, "Surprise (positive)", 1000);
-  const isBoredomConsistentlyPresent = useConsistentPresence(top4Emotions, "Boredom", 20000);
+  const isBoredomConsistentlyPresent = useConsistentPresence(top2Emotions, "Boredom", 20000);
 
   useEffect(() => {
     if (isTirednessConsistentlyPresent) {
@@ -410,7 +410,7 @@ export function FaceWidgets({ onCalibrate, connectVoice, sendSessionSettings, se
 
   return (
     <div>
-      <div className="md:flex mt-20">
+      <div className="md:flex">
         <FaceTrackedVideo
           className="mb-6"
           onVideoReady={onVideoReady}
@@ -436,7 +436,7 @@ export function FaceWidgets({ onCalibrate, connectVoice, sendSessionSettings, se
       <canvas className="hidden" ref={photoRef}></canvas>
 
 
-      <button onClick={toggleVideo} className="toggle-video-btn font-semibold text-center p-2 bg-gray-200 rounded border border-gray-400 shadow-lg">
+      <button onClick={toggleVideo} className="toggle-video-btn">
         {isVideoRunning ? 'Stop Video' : 'Start Video'}
       </button>
     </div>
