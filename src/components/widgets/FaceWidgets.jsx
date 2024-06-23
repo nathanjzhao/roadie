@@ -12,6 +12,8 @@ import { VideoRecorder } from "../../lib/media/videoRecorder";
 import { blobToBase64 } from "../../lib/utilities/blobUtilities";
 import { getApiUrlWs } from "../../lib/utilities/environmentUtilities";
 
+import useConsistentPresence from '@/lib/hooks/useConsistentPresence';
+
 const trackingFacesPlaceholder = [{
   boundingBox: {
     x: -20,
@@ -247,109 +249,164 @@ export function FaceWidgets({ onCalibrate, connectVoice, sendSessionSettings, se
     }
   }
 
-  const tirednessTimerRef = useRef(null);
-  const contemplationTimerRef = useRef(null);
-  const surpriseTimerRef = useRef(null);
-  const boredomTimerRef = useRef(null);
+  const [top2Emotions, setTop2Emotions] = useState([]);
+  const [top4Emotions, setTop4Emotions] = useState([]);
+  
+  useEffect(() => {
+    const sortedEmotions = [...emotions].sort((a, b) => b.value - a.value);
+    const top2 = sortedEmotions.slice(0, 2).map(e => e.name);
+    const top4 = sortedEmotions.slice(0, 4).map(e => e.name);
+    setTop2Emotions(top2);
+    setTop4Emotions(top4);
+  }, [emotions]);
+
+  const isTirednessConsistentlyPresent = useConsistentPresence(top4Emotions, "Tiredness", 5000);
+  const isContemplationConsistentlyPresent = useConsistentPresence(top4Emotions, "Contemplation", 10000);
+  const isSurpriseConsistentlyPresent = useConsistentPresence(top4Emotions, "Surprise (positive)", 1000);
+  const isBoredomConsistentlyPresent = useConsistentPresence(top4Emotions, "Boredom", 60000);
 
   useEffect(() => {
-    const checkAndConnectVoice = () => {
-      // Assuming 'emotions' is an array of objects like [{ emotion: 'calmness', value: 0.9 }, ...]
-      // Sort emotions by value in descending order
-      const sortedEmotions = [...emotions].sort((a, b) => b.value - a.value);
-      const top2Emotions = sortedEmotions.slice(0, 2).map(e => e.name);
-      const top4Emotions = sortedEmotions.slice(0, 4).map(e => e.name);
-  
-      if (top4Emotions.includes('Tiredness')) {
-        // Start or reset a 30-second timer
-        if (tirednessTimerRef.current) clearTimeout(tirednessTimerRef.current);
-        tirednessTimerRef.current = setTimeout(() => {
-          connectVoice();
+    if (isTirednessConsistentlyPresent) {
+      connectVoice();
 
-          // Wait for an additional 2 seconds before calling sendAssistantInput
-          setTimeout(() => {
-            sendAssistantInput("You seem tired. What can I do to keep you up?");
-          }, 2000); // 2 seconds
-        }, 1000); // 1 seconds
-      } else {
-        // If conditions are not met, clear the timer
-        if (tirednessTimerRef.current) {
-          clearTimeout(tirednessTimerRef.current);
-          tirednessTimerRef.current = null;
-        }
-      }
-
-      if (top2Emotions.includes('Contemplation')) {
-        // Start or reset a 30-second timer
-        if (contemplationTimerRef.current) clearTimeout(contemplationTimerRef.current);
-        contemplationTimerRef.current = setTimeout(() => {
-          connectVoice();
-          
-          // Wait for an additional 2 seconds before calling sendAssistantInput
-          setTimeout(() => {
-            sendAssistantInput("What are you thinking about? I'd like to hear.");
-          }, 2000); // 2 seconds
-        }, 7000); // 7 seconds
-      } else {
-        // If conditions are not met, clear the timer
-        if (contemplationTimerRef.current) {
-          clearTimeout(contemplationTimerRef.current);
-          contemplationTimerRef.current = null;
-        }
-      }
-
-      if (top2Emotions.includes('Surprise (positive)') || top2Emotions.includes('Surprise (negative)')) {
-        // Start or reset a 30-second timer
-        if (surpriseTimerRef.current) clearTimeout(surpriseTimerRef.current);
-        surpriseTimerRef.current = setTimeout(() => {
-          connectVoice();
-          
-          // Wait for an additional 2 seconds before calling sendAssistantInput
-          setTimeout(() => {
-            sendAssistantInput("Woah! What happened? Why are you surprised?");
-          }, 2000); // 2 seconds
-        }, 2000); // 2000 seconds
-      } else {
-        // If conditions are not met, clear the timer
-        if (surpriseTimerRef.current) {
-          clearTimeout(surpriseTimerRef.current);
-          surpriseTimerRef.current = null;
-        }
-      }
-
-      if (top2Emotions.includes('Boredom')) {
-        // Start or reset a 30-second timer
-        if (boredomTimerRef.current) clearTimeout(boredomTimerRef.current);
-        boredomTimerRef.current = setTimeout(() => {
-          connectVoice();
-          
-          // Wait for an additional 2 seconds before calling sendAssistantInput
-          setTimeout(() => {
-            sendAssistantInput("You seem bored. Want to hear a joke?");
-          }, 2000); // 2 seconds
-        }, 10000); // 10 seconds
-      } else {
-        // If conditions are not met, clear the timer
-        if (boredomTimerRef.current) {
-          clearTimeout(boredomTimerRef.current);
-          boredomTimerRef.current = null;
-        }
-      }
-    };
-
-    if (isVideoRunning) {
-      checkAndConnectVoice();
+      // Wait for an additional 2 seconds before calling sendAssistantInput
+      setTimeout(() => {
+        sendAssistantInput("You seem tired. What can I do to keep you up?");
+      }, 2000); // 2 seconds
     }
+    if (isContemplationConsistentlyPresent) {
+      connectVoice();
+
+      // Wait for an additional 2 seconds before calling sendAssistantInput
+      setTimeout(() => {
+        sendAssistantInput("What are you thinking about? I'd like to hear.");
+      }, 2000); // 2 seconds
+    }
+    if (isSurpriseConsistentlyPresent) {
+      connectVoice();
+
+      // Wait for an additional 2 seconds before calling sendAssistantInput
+      setTimeout(() => {
+        sendAssistantInput("Woah! What happened? Why are you surprised?");
+      }, 2000); // 2 seconds
+    }
+    if (isBoredomConsistentlyPresent) {
+      connectVoice();
+
+      // Wait for an additional 2 seconds before calling sendAssistantInput
+      setTimeout(() => {
+        sendAssistantInput("You seem bored. Want to hear a joke?");
+      }, 2000); // 2 seconds
+    }
+  }, [isTirednessConsistentlyPresent, isContemplationConsistentlyPresent, isSurpriseConsistentlyPresent, isBoredomConsistentlyPresent]);
+
+
+
+  // const tirednessTimerRef = useRef(null);
+  // const contemplationTimerRef = useRef(null);
+  // const surpriseTimerRef = useRef(null);
+  // const boredomTimerRef = useRef(null);
+
+  // useEffect(() => {
+  //   const checkAndConnectVoice = () => {
+  //     // Assuming 'emotions' is an array of objects like [{ emotion: 'calmness', value: 0.9 }, ...]
+  //     // Sort emotions by value in descending order
+  //     const sortedEmotions = [...emotions].sort((a, b) => b.value - a.value);
+  //     const top2Emotions = sortedEmotions.slice(0, 2).map(e => e.name);
+  //     const top4Emotions = sortedEmotions.slice(0, 4).map(e => e.name);
+  //     console.log(top4Emotions)
+  
+  //     if (top4Emotions.includes('Tiredness')) {
+  //       // Start or reset a 30-second timer
+  //       if (tirednessTimerRef.current) clearTimeout(tirednessTimerRef.current);
+  //       tirednessTimerRef.current = setTimeout(() => {
+  //         connectVoice();
+
+  //         // Wait for an additional 2 seconds before calling sendAssistantInput
+  //         setTimeout(() => {
+  //           sendAssistantInput("You seem tired. What can I do to keep you up?");
+  //         }, 2000); // 2 seconds
+  //       }, 300); // 1 seconds
+  //     } else {
+  //       // If conditions are not met, clear the timer
+  //       if (tirednessTimerRef.current) {
+  //         clearTimeout(tirednessTimerRef.current);
+  //         tirednessTimerRef.current = null;
+  //       }
+  //     }
+
+  //     if (top2Emotions.includes('Contemplation')) {
+  //       // Start or reset a 30-second timer
+  //       if (contemplationTimerRef.current) clearTimeout(contemplationTimerRef.current);
+  //       contemplationTimerRef.current = setTimeout(() => {
+  //         connectVoice();
+          
+  //         // Wait for an additional 2 seconds before calling sendAssistantInput
+  //         setTimeout(() => {
+  //           sendAssistantInput("What are you thinking about? I'd like to hear.");
+  //         }, 2000); // 2 seconds
+  //       }, 7000); // 7 seconds
+  //     } else {
+  //       // If conditions are not met, clear the timer
+  //       if (contemplationTimerRef.current) {
+  //         clearTimeout(contemplationTimerRef.current);
+  //         contemplationTimerRef.current = null;
+  //       }
+  //     }
+
+  //     if (top2Emotions.includes('Surprise (positive)') || top2Emotions.includes('Surprise (negative)')) {
+  //       // Start or reset a 30-second timer
+  //       if (surpriseTimerRef.current) clearTimeout(surpriseTimerRef.current);
+  //       surpriseTimerRef.current = setTimeout(() => {
+  //         connectVoice();
+          
+  //         // Wait for an additional 2 seconds before calling sendAssistantInput
+  //         setTimeout(() => {
+  //           sendAssistantInput("Woah! What happened? Why are you surprised?");
+  //         }, 2000); // 2 seconds
+  //       }, 2000); // 2000 seconds
+  //     } else {
+  //       // If conditions are not met, clear the timer
+  //       if (surpriseTimerRef.current) {
+  //         clearTimeout(surpriseTimerRef.current);
+  //         surpriseTimerRef.current = null;
+  //       }
+  //     }
+
+  //     if (top2Emotions.includes('Boredom')) {
+  //       // Start or reset a 30-second timer
+  //       console.log(boredomTimerRef.current)
+  //       if (boredomTimerRef.current) clearTimeout(boredomTimerRef.current);
+  //       boredomTimerRef.current = setTimeout(() => {
+  //         connectVoice();
+          
+  //         // Wait for an additional 2 seconds before calling sendAssistantInput
+  //         setTimeout(() => {
+  //           sendAssistantInput("You seem bored. Want to hear a joke?");
+  //         }, 2000); // 2 seconds
+  //       }, 10000); // 10 seconds
+  //     } else {
+  //       // If conditions are not met, clear the timer
+  //       if (boredomTimerRef.current) {
+  //         clearTimeout(boredomTimerRef.current);
+  //         boredomTimerRef.current = null;
+  //       }
+  //     }
+  //   };
+
+  //   if (isVideoRunning) {
+  //     checkAndConnectVoice();
+  //   }
    
   
-    // Cleanup on component unmount
-    return () => {
-      if (tirednessTimerRef.current) clearTimeout(tirednessTimerRef.current);
-      if (contemplationTimerRef.current) clearTimeout(contemplationTimerRef.current);
-      if (surpriseTimerRef.current) clearTimeout(surpriseTimerRef.current);
-      if (boredomTimerRef.current) clearTimeout(boredomTimerRef.current);
-    };
-  }, [emotions]); 
+  //   // Cleanup on component unmount
+  //   return () => {
+  //     if (tirednessTimerRef.current) clearTimeout(tirednessTimerRef.current);
+  //     if (contemplationTimerRef.current) clearTimeout(contemplationTimerRef.current);
+  //     if (surpriseTimerRef.current) clearTimeout(surpriseTimerRef.current);
+  //     if (boredomTimerRef.current) clearTimeout(boredomTimerRef.current);
+  //   };
+  // }, [emotions]); 
 
   return (
     <div>
