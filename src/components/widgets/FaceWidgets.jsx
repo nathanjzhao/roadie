@@ -410,7 +410,7 @@ export function FaceWidgets({ onCalibrate, connectVoice, sendSessionSettings, se
 
 
   return (
-    <div className="mt-12">
+    <div className="mt-12 bg-blue-400 p-12 rounded-lg" >
       <div className="md:flex mt-20">
         <FaceTrackedVideo
           className="mb-6"
@@ -433,13 +433,12 @@ export function FaceWidgets({ onCalibrate, connectVoice, sendSessionSettings, se
         )}
       </div>
 
-      <div className="pt-6">{status}</div>
+      <div className="pt-6 mb-2">{status + ' '}</div>
       <canvas className="hidden" ref={photoRef}></canvas>
-
 
       <button 
         onClick={toggleVideo} 
-        className={`toggle-video-btn font-semibold text-center p-2 rounded border border-gray-400 ${!isVideoRunning ? 'shadow-lg bg-gray-200'  : ''}`}
+        className={`toggle-video-btn font-semibold text-center p-2 rounded border border-gray-400 ${!isVideoRunning ? 'shadow-lg bg-gray-200'  : 'bg-white'}`}
       >
         {isVideoRunning ? 'Stop Video' : 'Start Video'}
       </button>

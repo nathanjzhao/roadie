@@ -121,7 +121,7 @@ export default function Controls() {
         >
           End Session
         </button>
-        <button className={`ml-4 font-semibold text-center p-2 rounded border border-gray-400 shadow-lg ${!isMuted ? 'shadow-lg bg-blue-400' : 'bg-red-400'}`}
+        <button className={`ml-4 font-semibold text-center p-2 rounded border border-gray-400 shadow-lg ${!isMuted ? 'shadow-lg bg-blue-400' : 'bg-blue-500'}`}
           onClick={toggleMute}
         >
           {isMuted ? 'Unmute' : 'Mute'}
@@ -136,7 +136,7 @@ export default function Controls() {
     <div className="h-screen flex items-center justify-center">
       <div className="w-1/5 h-1/5 flex flex-col items-center justify-center bg-gray-100 p-4 rounded shadow-lg">
         <FaceWidgets connectVoice={connect} sendSessionSettings={sendSessionSettings} sendUserInput={sendUserInput} sendAssistantInput={sendAssistantInput}/>
-        <hr className="my-4 w-full border-t border-gray-300" /> 
+        <hr className="my-4 w-full border-t border-white-300" /> 
         <button 
           className="font-semibold text-center p-2 rounded border border-gray-400 bg-orange-300 shadow-lg mt-4"
           onClick={() => {

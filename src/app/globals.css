@@ -17,8 +17,10 @@
 }
 
 body {
-  color: black;
-  background: white;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background: linear-gradient(to right, #A7C7E7, #89B6E5); /* Example gradient */
 }
 
 @layer utilities {

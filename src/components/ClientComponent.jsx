@@ -20,9 +20,9 @@ export default function ClientComponent({ accessToken }) {
     setIsDataLoaded(true); // Set data loaded to true after operation
   }, []);
 
-  if (!isDataLoaded) {
-    return <div>Loading...</div>; // Or any other loading indicator
-  }
+  // if (!isDataLoaded) {
+  //   return <div>Loading...</div>; // Or any other loading indicator
+  // }
 
   return (
     <VoiceProvider 
