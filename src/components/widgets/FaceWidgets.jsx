@@ -260,10 +260,10 @@ export function FaceWidgets({ onCalibrate, connectVoice, sendSessionSettings, se
     setTop4Emotions(top4);
   }, [emotions]);
 
-  const isTirednessConsistentlyPresent = useConsistentPresence(top4Emotions, "Tiredness", 5000);
-  const isContemplationConsistentlyPresent = useConsistentPresence(top4Emotions, "Contemplation", 10000);
-  const isSurpriseConsistentlyPresent = useConsistentPresence(top4Emotions, "Surprise (positive)", 1000);
-  const isBoredomConsistentlyPresent = useConsistentPresence(top4Emotions, "Boredom", 60000);
+  const isTirednessConsistentlyPresent = useConsistentPresence(top2Emotions, "Tiredness", 5000);
+  const isContemplationConsistentlyPresent = useConsistentPresence(top2Emotions, "Contemplation", 10000);
+  const isSurpriseConsistentlyPresent = useConsistentPresence(top2Emotions, "Surprise (positive)", 1000);
+  const isBoredomConsistentlyPresent = useConsistentPresence(top2Emotions, "Boredom", 20000);
 
   useEffect(() => {
     if (isTirednessConsistentlyPresent) {
