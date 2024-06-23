@@ -1,3 +1,5 @@
+From Potholes to Peace of Mind — Roadie's Got Your Drive Covered.
+
 ## Inspiration
 Every year, Americans spend a staggering 70 billion hours behind the wheel-- motivated by this, our team set out to not only transform these journeys to be safer, but also more engaging and personalized. From tackling the critical and often overlooked issue of drowsy or anxious driving, responsible for 21% of fatal vehicle crashes annually, to addressing dangerous and damaging road infrastructure that disproportionately affects California-- where we all attend college-- we wanted to create something to enhance every mile.
 
@@ -17,6 +19,11 @@ Beyond driving, Roadie paves your path to peace of mind across three key feature
 Initially, generating the mesh took multiple days according to TQDM. After brainstorming together, we realized that there is an data structure we learned in class that enables us to query points in K log(N) instead of K * N. This taught us that what we learned in class can be applied to build real-world projects.
 
 We also learned that in order to work effectively as a team, we need to parallelize tasks, similar to how we have parallel computer processes. We divided our work up into the LLM and Computer Vision aspects and combined our efforts in the end, enabling Roadie to possess a true multi-modal suite of capabilities for driving assistant.
+
+## Challenges We Ran Into
+We also bought a Raspberry Pi for dashboard installation but there were no Raspberry Pi peripherals (cameras, mics, speakers) available at Best Buy :(. This would be very useful to integrate everything together for an actual final product.
+
+Also, this was our first time training YOLO models and working with Depth Anything, which was very fun yet challenging! Parsing through the Hume documentation for React was also a bit hard — a recommendation for the devs: a lot of the information regarding socket inputs/outputs could be clearer!
 
 ## What's next for Roadie
 
